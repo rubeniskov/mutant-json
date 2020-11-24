@@ -24,9 +24,9 @@ yarn add mutant-json
 ## Functions
 
 <dl>
-<dt><a href="#mutantJson">mutantJson(target, process, end)</a></dt>
+<dt><a href="#mutantJson">mutantJson(target, process, opts)</a></dt>
 <dd><p>Iterates through the given iterator and applies mutation
-whereas the process callback is called. Also works with promises.
+whereas the iterator entry returns. Also works with promises.
 The iteratee must return an entry of [path, value].</p>
 </dd>
 </dl>
@@ -34,6 +34,9 @@ The iteratee must return an entry of [path, value].</p>
 ## Typedefs
 
 <dl>
+<dt><a href="#MutanPatch">MutanPatch</a> : <code>function</code></dt>
+<dd><p>Patch definition acording to the <a href="http://jsonpatch.com/">jsonpatch standard</a></p>
+</dd>
 <dt><a href="#MutantPatcher">MutantPatcher</a> : <code>function</code></dt>
 <dd></dd>
 <dt><a href="#MutantProcess">MutantProcess</a> : <code>function</code></dt>
@@ -46,9 +49,9 @@ The iteratee must return an entry of [path, value].</p>
 
 <a name="mutantJson"></a>
 
-## mutantJson(target, process, end)
+## mutantJson(target, process, opts)
 Iterates through the given iterator and applies mutation
-whereas the process callback is called. Also works with promises.
+whereas the iterator entry returns. Also works with promises.
 The iteratee must return an entry of [path, value].
 
 **Kind**: global function  
@@ -57,7 +60,72 @@ The iteratee must return an entry of [path, value].
 | --- | --- |
 | target | <code>any</code> | 
 | process | [<code>MutantProcess</code>](#MutantProcess) | 
-| end | <code>Promise.&lt;any&gt;</code> \| <code>any</code> | 
+| opts | [<code>MutantOptions</code>](#MutantOptions) | 
+
+**Example**  
+### Working with promises
+
+```javascript
+const mutateJson = require('mutant-json');
+
+const recursiveObjectPromises = {
+  foo: 0,
+  nested: Promise.resolve({
+    depth: 1,
+    nested: Promise.resolve({
+      depth: 2,
+      nested: Promise.resolve({
+        depth: 3,
+        nested: Promise.resolve({
+          depth: 4,
+        }),
+      }),
+    }),
+  }),
+  bar: 1,
+};
+
+const actual = await mutateJson(recursiveObjectPromises, (mutate, value) => {
+  mutate({
+    value: value * 2,
+  });
+});
+
+console.log(actual);
+```
+
+### Output
+```
+{
+  foo: 0,
+  nested: {
+    depth: 2,
+    nested: {
+      depth: 4,
+      nested: {
+        depth: 6,
+        nested: {
+          depth: 8,
+        },
+      },
+    },
+  },
+  bar: 2,
+}
+```
+<a name="MutanPatch"></a>
+
+## MutanPatch : <code>function</code>
+Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
+
+**Kind**: global typedef  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| op | <code>&quot;add&quot;</code> \| <code>&quot;remove&quot;</code> \| <code>&quot;replace&quot;</code> \| <code>&quot;move&quot;</code> \| <code>&quot;copy&quot;</code> \| <code>&quot;test&quot;</code> | Patch operation |
+| value | <code>any</code> |  |
+| [path] | <code>String</code> | [JSONPointer](https://tools.ietf.org/html/rfc6901) |
+| [from] | <code>String</code> | [JSONPointer](https://tools.ietf.org/html/rfc6901) |
 
 <a name="MutantPatcher"></a>
 
@@ -66,8 +134,7 @@ The iteratee must return an entry of [path, value].
 
 | Param | Type |
 | --- | --- |
-| value | <code>any</code> | 
-|  | <code>&#x27;add&#x27;</code> \| <code>&#x27;remove&#x27;</code> \| <code>&#x27;replace&#x27;</code> \| <code>&#x27;batch&#x27;</code> | 
+| patches | [<code>MutanPatch</code>](#MutanPatch) \| [<code>Array.&lt;MutanPatch&gt;</code>](#MutanPatch) | 
 
 <a name="MutantProcess"></a>
 
@@ -79,7 +146,7 @@ The iteratee must return an entry of [path, value].
 | mutate | <code>MutationPatcher</code> | 
 | value | <code>any</code> | 
 | path | <code>string</code> | 
-| state | <code>any</code> | 
+| result | <code>any</code> | 
 
 <a name="MutantJsonEntry"></a>
 
@@ -89,7 +156,7 @@ The iteratee must return an entry of [path, value].
 
 | Name | Type | Description |
 | --- | --- | --- |
-| 0 | <code>string</code> | Object path |
+| 0 | <code>string</code> | [JSONPointer](https://tools.ietf.org/html/rfc6901) |
 | 1 | <code>any</code> | Value |
 
 <a name="MutantOptions"></a>
@@ -97,9 +164,9 @@ The iteratee must return an entry of [path, value].
 ## MutantOptions : <code>Object</code>
 **Kind**: global typedef  
 
-| Param | Type |
-| --- | --- |
-| iterator | <code>Array.&lt;MutationJsonEntry&gt;</code> \| <code>Iterable</code> \| <code>Iterator</code> | 
-| process | <code>\*</code> | 
-| opts | <code>\*</code> | 
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [promises] | <code>Boolean</code> | <code>true</code> | Processing promises taking the resolved as part of the result |
+| [iterator] | <code>Array.&lt;MutationJsonEntry&gt;</code> \| <code>Iterable</code> \| <code>Iterator</code> |  | Iterator default [traverse-json](https://github.com/rubeniskov/traverse-json) |
+| [patcher] | <code>function</code> |  | Patcher function |
 

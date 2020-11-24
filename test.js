@@ -191,7 +191,7 @@ test('should stringify numeric values', (t) => {
       },
     },
     d: '3',
-   };
+  };
 
   const actual = mutateJson(nestedObject, (mutate, value) => {
     if (typeof value === 'number') {

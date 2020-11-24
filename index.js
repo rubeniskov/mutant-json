@@ -13,9 +13,17 @@ const parseIterator = (iterator) => {
 };
 
 /**
- * @callback MutantPatcher
+ * Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
+ * @callback MutanPatch
+ * @param {("add"|"remove"|"replace"|"move"|"copy"|"test")} op Patch operation
  * @param {any} value
- * @param {('add'|'remove'|'replace'|'batch')}
+ * @param {String} [path] [JSONPointer](https://tools.ietf.org/html/rfc6901)
+ * @param {String} [from] [JSONPointer](https://tools.ietf.org/html/rfc6901)
+ */
+
+/**
+ * @callback MutantPatcher
+ * @param {MutanPatch|MutanPatch[]} patches
  */
 
 /**
@@ -28,31 +36,83 @@ const parseIterator = (iterator) => {
 
 /**
  * @typedef {Array} MutantJsonEntry
- * @prop {string} 0 Object path
+ * @prop {string} 0 [JSONPointer](https://tools.ietf.org/html/rfc6901)
  * @prop {any} 1 Value
  */
 
 /**
  * @typedef {Object} MutantOptions
- * @param {Array<MutationJsonEntry>|Iterable|Iterator} iterator
- * @param {*} process
- * @param {*} opts
+ * @param {Boolean} [promises=true] Processing promises taking the resolved as part of the result
+ * @param {Array<MutationJsonEntry>|Iterable|Iterator} [iterator] Iterator default [traverse-json](https://github.com/rubeniskov/traverse-json)
+ * @param {Function} [patcher] Patcher function
  */
 
 /**
  * Iterates through the given iterator and applies mutation
- * whereas the process callback is called. Also works with promises.
+ * whereas the iterator entry returns. Also works with promises.
  * The iteratee must return an entry of [path, value].
  *
  * @param {any} target
  * @param {MutantProcess} process
- * @param {Promise<any>|any} end
+ * @param {MutantOptions} opts
+ * @example
+ *
+ * ### Working with promises
+ *
+ * ```javascript
+ * const mutateJson = require('mutant-json');
+ *
+ * const recursiveObjectPromises = {
+ *   foo: 0,
+ *   nested: Promise.resolve({
+ *     depth: 1,
+ *     nested: Promise.resolve({
+ *       depth: 2,
+ *       nested: Promise.resolve({
+ *         depth: 3,
+ *         nested: Promise.resolve({
+ *           depth: 4,
+ *         }),
+ *       }),
+ *     }),
+ *   }),
+ *   bar: 1,
+ * };
+ *
+ * const actual = await mutateJson(recursiveObjectPromises, (mutate, value) => {
+ *   mutate({
+ *     value: value * 2,
+ *   });
+ * });
+ *
+ * console.log(actual);
+ * ```
+ *
+ * ### Output
+ * ```
+ * {
+ *   foo: 0,
+ *   nested: {
+ *     depth: 2,
+ *     nested: {
+ *       depth: 4,
+ *       nested: {
+ *         depth: 6,
+ *         nested: {
+ *           depth: 8,
+ *         },
+ *       },
+ *     },
+ *   },
+ *   bar: 2,
+ * }
+ * ```
  */
 const mutantJson = (target, process, opts) => {
   const {
     promises = true,
     iterator = traverseIterator(target, opts),
-    applyPatch = jsonpatcher.apply_patch,
+    patcher = jsonpatcher.apply_patch,
   } = { ...opts };
 
   const mutations = [];
@@ -100,7 +160,7 @@ const mutantJson = (target, process, opts) => {
 
     if (promises && isPromise(entryValue)) {
       return entryValue.then((value) => {
-        return traverse(applyPatch(result, [{
+        return traverse(patcher(result, [{
           op: 'replace',
           path: entryPath,
           value,
@@ -114,7 +174,7 @@ const mutantJson = (target, process, opts) => {
   };
 
   const applyMutations = (result) => {
-    return applyPatch(result, mutations);
+    return patcher(result, mutations);
   };
 
   const result = traverse(target);
