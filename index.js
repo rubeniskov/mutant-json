@@ -1,8 +1,11 @@
 const jsonpatcher = require('jsonpatch');
 const traverseIterator = require('traverse-json');
 const isPromise = require('is-promise');
-const JSONPATCH_SEP = '/';
-const JSONPATCH_OPS = ['replace', 'remove', 'add', 'copy', 'move', 'test'];
+const {
+  JSONPATCH_SEP,
+  JSONPATCH_OPS,
+} = require('./constants');
+const tap = require('./tap');
 
 const parseIterator = (iterator) => {
   if (Array.isArray(iterator)) {
@@ -119,7 +122,6 @@ const mutantJson = (target, process, opts) => {
     patcher = jsonpatcher.apply_patch,
   } = { ...opts };
 
-  const mutations = [];
   const iteratee = parseIterator(iterator);
 
   if (typeof process !== 'function') {
@@ -137,7 +139,7 @@ const mutantJson = (target, process, opts) => {
     return { entry, done };
   };
 
-  const mutate = (patches, entryPath) => {
+  const mutate = (patches, entryPath, result) => {
     if (!Array.isArray(patches)) {
       patches = [patches];
     }
@@ -148,10 +150,11 @@ const mutantJson = (target, process, opts) => {
       if ((path && path[0] !== JSONPATCH_SEP) || (from && from[0] !== JSONPATCH_SEP)) {
         throw new Error(`mutant-json: JSONPointer must starts with a slash "${JSONPATCH_SEP}" (or be an empty string)!`);
       }
-      mutations.push({
+
+      return patcher(result, [{
         ...restPatch,
         op, from, path,
-      });
+      }]);
     }
   };
 
@@ -172,22 +175,17 @@ const mutantJson = (target, process, opts) => {
       });
     }
 
-    process((patch) => mutate(patch, entryPath), entryValue, entryPath, result);
-
-    return traverse(result);
+    let extra;
+    process((patch) => {
+      result = mutate(patch, entryPath, result);
+      if (typeof patch.value === 'object') {
+        extra = tap(result, entryPath);
+      }
+    }, entryValue, entryPath, result);
+    return traverse(result, extra);
   };
 
-  const applyMutations = (result) => {
-    return patcher(result, mutations);
-  };
-
-  const result = traverse(target);
-
-  if (isPromise(result)) {
-    return result.then(applyMutations);
-  }
-
-  return applyMutations(result);
+  return traverse(target);
 };
 
 module.exports = mutantJson;
