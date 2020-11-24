@@ -1,0 +1,16 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "extends": "eslint:recommended",
+  "rules": {
+    "semi": [2, "always"],
+    "comma-dangle": ["error", "always-multiline"],
+    "no-multiple-empty-lines": "off"
+  }
+}
