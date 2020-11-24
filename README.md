@@ -79,6 +79,7 @@ The iteratee must return an entry of [path, value].
 | mutate | <code>MutationPatcher</code> | 
 | value | <code>any</code> | 
 | path | <code>string</code> | 
+| state | <code>any</code> | 
 
 <a name="MutantJsonEntry"></a>
 

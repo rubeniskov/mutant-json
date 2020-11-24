@@ -23,6 +23,7 @@ const parseIterator = (iterator) => {
  * @param {MutationPatcher} mutate
  * @param {any} value
  * @param {string} path
+ * @param {any} result
  */
 
 /**
@@ -107,7 +108,7 @@ const mutantJson = (target, process, opts) => {
       });
     }
 
-    process((patch) => mutate(patch, entryPath), entryValue, entryPath);
+    process((patch) => mutate(patch, entryPath), entryValue, entryPath, result);
 
     return traverse(result);
   };

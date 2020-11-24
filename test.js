@@ -249,7 +249,6 @@ test('should works with promises', async (t) => {
   };
 
   const actual = await mutateJson(flattenObjectPromises, (mutate, value, path) => {
-    console.log(path);
     mutate({
       value: value * 100,
     });
