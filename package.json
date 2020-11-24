@@ -1,6 +1,6 @@
 {
   "name": "mutant-json",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
     "nyc": "^15.1.0"
   },
   "dependencies": {
-    "traverse-json": "^0.3.0",
+    "traverse-json": "^0.3.1",
     "is-promise": "^4.0.0",
     "jsonpatch": "^3.0.1"
   }
