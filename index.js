@@ -42,9 +42,13 @@ const parseIterator = (iterator) => {
 
 /**
  * @typedef {Object} MutantOptions
- * @param {Boolean} [promises=true] Processing promises taking the resolved as part of the result
- * @param {Array<MutationJsonEntry>|Iterable|Iterator} [iterator] Iterator default [traverse-json](https://github.com/rubeniskov/traverse-json)
- * @param {Function} [patcher] Patcher function
+ * @prop {Boolean} [opts.recursive=true] enable/disable nested arrays and objects recursion
+ * @prop {Boolean} [opts.nested=false] also emit nested array or objects
+ * @prop {Boolean} [opts.step=1] the step to increment, default 1
+ * @prop {String|Function|RegeExp} [opts.test=false] regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties
+ * @prop {Boolean} [promises=true] Processing promises taking the resolved as part of the result
+ * @prop {Array<MutationJsonEntry>|Iterable|Iterator} [iterator] Iterator default [traverse-json](https://github.com/rubeniskov/traverse-json)
+ * @prop {Function} [patcher] Patcher function
  */
 
 /**

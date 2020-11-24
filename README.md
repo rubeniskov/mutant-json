@@ -163,9 +163,14 @@ Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
 
 ## MutantOptions : <code>Object</code>
 **Kind**: global typedef  
+**Properties**
 
-| Param | Type | Default | Description |
+| Name | Type | Default | Description |
 | --- | --- | --- | --- |
+| [opts.recursive] | <code>Boolean</code> | <code>true</code> | enable/disable nested arrays and objects recursion |
+| [opts.nested] | <code>Boolean</code> | <code>false</code> | also emit nested array or objects |
+| [opts.step] | <code>Boolean</code> | <code>1</code> | the step to increment, default 1 |
+| [opts.test] | <code>String</code> \| <code>function</code> \| <code>RegeExp</code> | <code>false</code> | regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties |
 | [promises] | <code>Boolean</code> | <code>true</code> | Processing promises taking the resolved as part of the result |
 | [iterator] | <code>Array.&lt;MutationJsonEntry&gt;</code> \| <code>Iterable</code> \| <code>Iterator</code> |  | Iterator default [traverse-json](https://github.com/rubeniskov/traverse-json) |
 | [patcher] | <code>function</code> |  | Patcher function |
