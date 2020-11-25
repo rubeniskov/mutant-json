@@ -49,6 +49,7 @@ const parseIterator = (iterator) => {
  * @prop {Boolean} [opts.nested=false] also emit nested array or objects
  * @prop {Boolean} [opts.step=1] the step to increment, default 1
  * @prop {String|Function|RegeExp} [opts.test=false] regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties
+ * @prop {Boolean} [once=false] Stops when applies the first mutation
  * @prop {Boolean} [promises=true] Processing promises taking the resolved as part of the result
  * @prop {Array<MutationJsonEntry>|Iterable|Iterator} [iterator] Iterator default [traverse-json](https://github.com/rubeniskov/traverse-json)
  * @prop {Function} [patcher] Patcher function
@@ -117,10 +118,10 @@ const parseIterator = (iterator) => {
  */
 const mutantJson = (target, process, opts) => {
   const {
+    once = false,
     promises = true,
     iterator = traverseIterator(target, opts),
     patcher = jsonpatcher.apply_patch,
-    once = false,
   } = { ...opts };
 
   const iteratee = parseIterator(iterator);
@@ -144,7 +145,9 @@ const mutantJson = (target, process, opts) => {
     if (!Array.isArray(patches)) {
       patches = [patches];
     }
-    for (let { op = JSONPATCH_OPS[0], path = entryPath, from, ...restPatch } of patches) {
+
+    return patcher(result, patches.map(({ op = JSONPATCH_OPS[0], path = entryPath, from, ...restPatch }) => {
+
       if (!JSONPATCH_OPS.includes(op)) {
         throw new Error(`mutant-json: Unexpected patch operation "${op}"`);
       }
@@ -152,11 +155,11 @@ const mutantJson = (target, process, opts) => {
         throw new Error(`mutant-json: JSONPointer must starts with a slash "${JSONPATCH_SEP}" (or be an empty string)!`);
       }
 
-      return patcher(result, [{
+      return {
         ...restPatch,
         op, from, path,
-      }]);
-    }
+      };
+    }));
   };
 
   const traverse = (result, resolved) => {

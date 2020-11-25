@@ -1,6 +1,7 @@
 const test = require('ava');
 const traverseJson = require('traverse-json');
 const mutateJson = require('.');
+const tap = require('./tap');
 
 const oneDepthObject = {
   a: 0,
@@ -40,6 +41,16 @@ const recursiveObject = {
   bar: 1,
 };
 
+test('should tap return the desired value from path', (t) => {
+  t.is(tap(recursiveObject, '/nested/nested/depth'), 2);
+  t.is(tap(recursiveObject, '/nested/nested/depth/depth'), undefined);
+  t.is(tap(recursiveObject, '/nested/nested/depth/depth', null), null);
+  t.is(tap(recursiveObject, '/nested/nested/depth/depth', 3), 3);
+  t.is(tap(recursiveObject, '/nested/nested/depth/depth', 0), 0);
+  t.is(tap(recursiveObject, '/foo'), 0);
+  t.is(tap(recursiveObject, '/foo', 1), 0);
+});
+
 test('should raise error when the process param is not defined', (t) => {
   t.throws(() => mutateJson({}, []), {
     message: /Process param must be defined and be a function/,
@@ -50,7 +61,7 @@ test('should raise error when the entry has not the right format', (t) => {
   t.throws(() => mutateJson({}, () => {}, {
     iterator: [undefined],
   }), {
-    message: /Unexpected entry format, iterator must return an object entry/,
+    message: /Unexpected entry format, iterator must return a entry object/,
   });
 });
 
@@ -93,6 +104,48 @@ test('should mutate all entries of the iterator', (t) => {
   t.deepEqual(actual, expected);
 });
 
+test('should mutate only the first entry of the iterator', (t) => {
+  const expected = {
+    a: 1,
+    b: 1,
+    c: 2,
+   };
+
+  const entries = Object.entries(oneDepthObject).map(([k, v]) => [`/${k}`, v]);
+
+  t.plan(2);
+  let idx = 0;
+  const actual = mutateJson(oneDepthObject, (mutate, value, path) => {
+    t.deepEqual([path, value], entries[idx++]);
+    mutate({ value: value + 1 });
+  }, {
+    iterator: entries, once: true,
+  });
+
+  t.deepEqual(actual, expected);
+});
+
+test('should copy the c entry into a', (t) => {
+  const expected = {
+    a: 2,
+    b: 1,
+    c: 2,
+   };
+
+  const entries = Object.entries(oneDepthObject).map(([k, v]) => [`/${k}`, v]);
+
+  t.plan(2);
+  let idx = 0;
+  const actual = mutateJson(oneDepthObject, (mutate, value, path) => {
+    t.deepEqual([path, value], entries[idx++]);
+    mutate({ op: 'copy', from: '/c' });
+  }, {
+    iterator: entries, once: true,
+  });
+
+  t.deepEqual(actual, expected);
+});
+
 test('should replace all the values entries by an string using replace', (t) => {
   const expected = {
     a: 'replaced',
@@ -112,6 +165,30 @@ test('should replace all the values entries by an string using replace', (t) => 
     });
   }, {
     iterator: entries,
+  });
+
+  t.deepEqual(actual, expected);
+});
+
+test('should accept multiple ops', (t) => {
+  const expected = {
+    a: 1,
+    b: 1,
+    c: 1,
+   };
+
+  const entries = Object.entries(oneDepthObject).map(([k, v]) => [`/${k}`, v]);
+
+  const actual = mutateJson(oneDepthObject, (mutate, value, path) => {
+    mutate([{
+      op: 'replace', value: value + 1, path,
+    }, {
+      op: 'replace', value: value + 1, path: '/b',
+    }, {
+      op: 'replace', value: value + 1, path: '/c',
+    }]);
+  }, {
+    iterator: entries, once: true,
   });
 
   t.deepEqual(actual, expected);
