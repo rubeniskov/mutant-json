@@ -167,9 +167,9 @@ Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| [opts.recursive] | <code>Boolean</code> | <code>true</code> | enable/disable nested arrays and objects recursion |
-| [opts.nested] | <code>Boolean</code> | <code>false</code> | also emit nested array or objects |
-| [opts.step] | <code>Boolean</code> | <code>1</code> | the step to increment, default 1 |
+| [recursive] | <code>Boolean</code> | <code>true</code> | enable/disable nested arrays and objects recursion |
+| [nested] | <code>Boolean</code> | <code>false</code> | also emit nested array or objects |
+| [step] | <code>Boolean</code> | <code>1</code> | the step to increment, default 1 |
 | [opts.test] | <code>String</code> \| <code>function</code> \| <code>RegeExp</code> | <code>false</code> | regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties |
 | [once] | <code>Boolean</code> | <code>false</code> | Stops when applies the first mutation |
 | [promises] | <code>Boolean</code> | <code>true</code> | Processing promises taking the resolved as part of the result |

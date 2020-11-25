@@ -45,9 +45,9 @@ const parseIterator = (iterator) => {
 
 /**
  * @typedef {Object} MutantOptions
- * @prop {Boolean} [opts.recursive=true] enable/disable nested arrays and objects recursion
- * @prop {Boolean} [opts.nested=false] also emit nested array or objects
- * @prop {Boolean} [opts.step=1] the step to increment, default 1
+ * @prop {Boolean} [recursive=true] enable/disable nested arrays and objects recursion
+ * @prop {Boolean} [nested=false] also emit nested array or objects
+ * @prop {Boolean} [step=1] the step to increment, default 1
  * @prop {String|Function|RegeExp} [opts.test=false] regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties
  * @prop {Boolean} [once=false] Stops when applies the first mutation
  * @prop {Boolean} [promises=true] Processing promises taking the resolved as part of the result
