@@ -120,6 +120,7 @@ const mutantJson = (target, process, opts) => {
     promises = true,
     iterator = traverseIterator(target, opts),
     patcher = jsonpatcher.apply_patch,
+    once = false,
   } = { ...opts };
 
   const iteratee = parseIterator(iterator);
@@ -133,7 +134,7 @@ const mutantJson = (target, process, opts) => {
     if (done) return { done };
 
     if (!Array.isArray(entry) || entry.length < 2) {
-      throw new Error('mutant-json: Unexpected entry format, iterator must return an object entry [path: string, value: any]');
+      throw new Error('mutant-json: Unexpected entry format, iterator must return a entry object [path: string, value: any]');
     }
 
     return { entry, done };
@@ -176,12 +177,18 @@ const mutantJson = (target, process, opts) => {
     }
 
     let extra;
+    let mutated = false;
     process((patch) => {
+      mutated = true;
       result = mutate(patch, entryPath, result);
       if (typeof patch.value === 'object') {
         extra = tap(result, entryPath);
       }
     }, entryValue, entryPath, result);
+
+    if (mutated && once)
+      return result;
+
     return traverse(result, extra);
   };
 
