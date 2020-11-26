@@ -325,7 +325,28 @@ test('should works with promises', async (t) => {
     bar: 200,
   };
 
-  const actual = await mutateJson(flattenObjectPromises, (mutate, value, path) => {
+  const actual = await mutateJson(flattenObjectPromises, (mutate, value) => {
+    mutate({
+      value: value * 100,
+    });
+  });
+
+  t.deepEqual(actual, expected);
+});
+
+test('should works with target object as promise', async (t) => {
+
+  const flattenObjectPromises = {
+    foo: Promise.resolve(1),
+    bar: Promise.resolve(2),
+  };
+
+  const expected = {
+    foo: 100,
+    bar: 200,
+  };
+
+  const actual = await mutateJson(Promise.resolve(flattenObjectPromises), (mutate, value) => {
     mutate({
       value: value * 100,
     });

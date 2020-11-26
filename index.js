@@ -195,6 +195,10 @@ const mutantJson = (target, process, opts) => {
     return traverse(result, extra);
   };
 
+  if (isPromise(target)) {
+    return target.then((res) => traverse(res, res));
+  }
+
   return traverse(target);
 };
 
