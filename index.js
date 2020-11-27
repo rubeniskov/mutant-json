@@ -15,6 +15,8 @@ const parseIterator = (iterator) => {
   return iterator.next ? (extra) => iterator.next(extra) : iterator;
 };
 
+const parseOptions = (opts) => typeof opts !== 'object' ? ({ test: opts }) : { ...opts };
+
 /**
  * Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
  * @callback MutanPatch
@@ -127,7 +129,7 @@ const mutantJson = (target, process, opts) => {
     promises = true,
     iterator = traverseIterator(target, opts),
     patcher = (target, patch) => jsonpatcher.apply_patch(target, [patch]),
-  } = { ...opts };
+  } = parseOptions(opts);
 
   const iteratee = parseIterator(iterator);
 

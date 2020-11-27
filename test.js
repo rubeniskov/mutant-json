@@ -240,7 +240,7 @@ test('should modify the nested values', (t) => {
     mutate({
       value: { ...value, foo: `bar ${value.depth}`},
     });
-  }, { test: '@nested' });
+  }, '@nested');
 
   t.deepEqual(actual, expected);
 });
