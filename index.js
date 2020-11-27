@@ -18,7 +18,7 @@ const parseIterator = (iterator) => {
 /**
  * Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
  * @callback MutanPatch
- * @param {("add"|"remove"|"replace"|"move"|"copy"|"test")} op Patch operation
+ * @param {("remove"|"replace")} op Patch operation
  * @param {any} value
  * @param {String} [path] [JSONPointer](https://tools.ietf.org/html/rfc6901)
  * @param {String} [from] [JSONPointer](https://tools.ietf.org/html/rfc6901)
@@ -117,11 +117,16 @@ const parseIterator = (iterator) => {
  * ```
  */
 const mutantJson = (target, process, opts) => {
+
+  if (isPromise(target)) {
+    return target.then((res) => mutantJson(res, process, opts));
+  }
+
   const {
     once = false,
     promises = true,
     iterator = traverseIterator(target, opts),
-    patcher = jsonpatcher.apply_patch,
+    patcher = (target, patch) => jsonpatcher.apply_patch(target, [patch]),
   } = { ...opts };
 
   const iteratee = parseIterator(iterator);
@@ -131,7 +136,7 @@ const mutantJson = (target, process, opts) => {
   }
 
   const next = (extra) => {
-    const { value: entry = [], done } = iteratee(extra);
+    const { value: entry = [], done } = extra ? iteratee(extra[0], extra[1]) : iteratee();
     if (done) return { done };
 
     if (!Array.isArray(entry) || entry.length < 2) {
@@ -141,29 +146,47 @@ const mutantJson = (target, process, opts) => {
     return { entry, done };
   };
 
-  const mutate = (patches, entryPath, result) => {
-    if (!Array.isArray(patches)) {
-      patches = [patches];
+  const applyPatches = (patch, path, result) => {
+
+    if (isPromise(patch)) {
+      return patch.then((res) => applyPatches(res, path, result));
     }
 
-    return patcher(result, patches.map(({ op = JSONPATCH_OPS[0], path = entryPath, from, ...restPatch }) => {
+    const parsedPatch = {  op: JSONPATCH_OPS[0], ...patch, path };
 
-      if (!JSONPATCH_OPS.includes(op)) {
-        throw new Error(`mutant-json: Unexpected patch operation "${op}"`);
-      }
-      if ((path && path[0] !== JSONPATCH_SEP) || (from && from[0] !== JSONPATCH_SEP)) {
-        throw new Error(`mutant-json: JSONPointer must starts with a slash "${JSONPATCH_SEP}" (or be an empty string)!`);
-      }
+    if (!JSONPATCH_OPS.includes(parsedPatch.op)) {
+      throw new Error(`mutant-json: Unexpected patch operation "${parsedPatch.op}"`);
+    }
 
-      return {
-        ...restPatch,
-        op, from, path,
-      };
-    }));
+    if ((path && path[0] !== JSONPATCH_SEP)) {
+      throw new Error(`mutant-json: JSONPointer must starts with a slash "${JSONPATCH_SEP}" (or be an empty string)!`);
+    }
+
+    const patched = patcher(result, parsedPatch);
+
+    return {
+      result: patched,
+      extra: parsedPatch.op !== 'remove' && typeof parsedPatch.value === 'object'
+        ? [parsedPatch.path, tap(patched, parsedPatch.path)]
+        : undefined,
+    };
   };
 
-  const traverse = (result, resolved) => {
-    const { entry, done } = next(resolved);
+  const processMutation = (value, path, target) => {
+    let ret;
+
+    process((patch) => {
+      ret = applyPatches(patch, path, target);
+    }, value, path, target);
+
+    return ret;
+  };
+
+  const traverse = (result, extra, mutated) => {
+
+    if (mutated && once) return result;
+
+    const { entry, done } = next(extra);
 
     if (done) return result;
 
@@ -171,33 +194,27 @@ const mutantJson = (target, process, opts) => {
 
     if (promises && isPromise(entryValue)) {
       return entryValue.then((value) => {
-        return traverse(patcher(result, [{
+        return traverse(patcher(result, {
           op: 'replace',
           path: entryPath,
           value,
-        }]), value);
+        }), [entryPath, value]);
       });
     }
 
-    let extra;
-    let mutated = false;
-    process((patch) => {
-      mutated = true;
-      result = mutate(patch, entryPath, result);
-      if (typeof patch.value === 'object') {
-        extra = tap(result, entryPath);
-      }
-    }, entryValue, entryPath, result);
+    const processResult = processMutation(entryValue, entryPath, result);
 
-    if (mutated && once)
-      return result;
+    if (isPromise(processResult)) {
+      return processResult.then(({ result, ...rest }) => traverse(result, rest, true));
+    }
 
-    return traverse(result, extra);
+    if (processResult) {
+      const { result, ...rest } = processResult;
+      return traverse(result, rest, true);
+    }
+
+    return traverse(result);
   };
-
-  if (isPromise(target)) {
-    return target.then((res) => traverse(res, res));
-  }
 
   return traverse(target);
 };

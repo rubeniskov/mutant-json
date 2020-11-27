@@ -125,25 +125,19 @@ test('should mutate only the first entry of the iterator', (t) => {
   t.deepEqual(actual, expected);
 });
 
-test('should copy the c entry into a', (t) => {
-  const expected = {
-    a: 2,
-    b: 1,
-    c: 2,
-   };
+test('should throws error when copy operation detected', (t) => {
 
   const entries = Object.entries(oneDepthObject).map(([k, v]) => [`/${k}`, v]);
 
-  t.plan(2);
-  let idx = 0;
-  const actual = mutateJson(oneDepthObject, (mutate, value, path) => {
-    t.deepEqual([path, value], entries[idx++]);
-    mutate({ op: 'copy', from: '/c' });
+  t.throws(()=> {
+    mutateJson(oneDepthObject, (mutate) => {
+      mutate({ op: 'copy', from: '/c' });
+    }, {
+      iterator: entries, once: true,
+    });
   }, {
-    iterator: entries, once: true,
+    message: 'mutant-json: Unexpected patch operation "copy"',
   });
-
-  t.deepEqual(actual, expected);
 });
 
 test('should replace all the values entries by an string using replace', (t) => {
@@ -170,30 +164,6 @@ test('should replace all the values entries by an string using replace', (t) => 
   t.deepEqual(actual, expected);
 });
 
-test('should accept multiple ops', (t) => {
-  const expected = {
-    a: 1,
-    b: 1,
-    c: 1,
-   };
-
-  const entries = Object.entries(oneDepthObject).map(([k, v]) => [`/${k}`, v]);
-
-  const actual = mutateJson(oneDepthObject, (mutate, value, path) => {
-    mutate([{
-      op: 'replace', value: value + 1, path,
-    }, {
-      op: 'replace', value: value + 1, path: '/b',
-    }, {
-      op: 'replace', value: value + 1, path: '/c',
-    }]);
-  }, {
-    iterator: entries, once: true,
-  });
-
-  t.deepEqual(actual, expected);
-});
-
 test('should remove entries with value 1', (t) => {
   const expected = {
     a: 0,
@@ -204,43 +174,6 @@ test('should remove entries with value 1', (t) => {
     if (value === 1) {
       mutate({ op: 'remove' });
     }
-  });
-
-  t.deepEqual(actual, expected);
-});
-
-test('should duplicate all entries with a sufix of the iterator', (t) => {
-  const expected = {
-    a: 0,
-    a_suffix: 0,
-    b: 1,
-    b_suffix: 1,
-    c: 2,
-    c_suffix: 2,
-   };
-
-  const actual = mutateJson(oneDepthObject, (mutate, value, path) => {
-    mutate({
-      op: 'add',
-      value,
-      path: `${path}_suffix`,
-    });
-  });
-
-  t.deepEqual(actual, expected);
-});
-
-test('should works with traverse-json', (t) => {
-  const expected = {
-    a: 1,
-    b: 2,
-    c: 3,
-   };
-
-  const actual = mutateJson(oneDepthObject, (mutate, value) => {
-    mutate({
-      value: value + 1,
-    });
   });
 
   t.deepEqual(actual, expected);
@@ -399,4 +332,28 @@ test('should works with promises recursively', async (t) => {
 
   t.deepEqual(actual, expected);
   t.pass();
+});
+
+test('should mutate using a promise', async (t) => {
+
+  const flattenObjectPromises = {
+    foo: Promise.resolve(1),
+    bar: Promise.resolve(2),
+  };
+
+  const expected = {
+    foo: 100,
+    bar: 200,
+  };
+
+  const actual = await mutateJson(Promise.resolve(flattenObjectPromises), (mutate, value) => {
+    // mutate(Promise.resolve({
+    //   value: value * 100,
+    // }));
+    mutate(Promise.resolve({
+      value: value * 100,
+    }));
+  });
+
+  t.deepEqual(actual, expected);
 });

@@ -1,5 +1,5 @@
 const JSONPATCH_SEP = '/';
-const JSONPATCH_OPS = ['replace', 'remove', 'add', 'copy', 'move', 'test'];
+const JSONPATCH_OPS = ["replace", "remove"];
 
 module.exports = {
   JSONPATCH_SEP,
