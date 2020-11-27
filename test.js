@@ -214,6 +214,35 @@ test('should stringify numeric values', (t) => {
   t.deepEqual(actual, expected);
 });
 
+test('should append nested and detects in the next iteration', (t) => {
+  const entry = {
+    a: 'nested',
+  };
+
+  const expected = {
+    a: {
+      nested: {
+        nested: {
+          nested: 'nested',
+        },
+      },
+    },
+  };
+
+  let idx = 0;
+  const actual = mutateJson(entry, (mutate) => {
+    if (idx ++ < 3) {
+      mutate({
+        value: {
+          nested: 'nested',
+        },
+      });
+    }
+  }, ([, value]) => value === 'nested');
+
+  t.deepEqual(actual, expected);
+});
+
 test('should modify the nested values', (t) => {
   const expected = {
     foo: 0,

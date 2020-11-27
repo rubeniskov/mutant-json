@@ -207,12 +207,12 @@ const mutantJson = (target, process, opts) => {
     const processResult = processMutation(entryValue, entryPath, result);
 
     if (isPromise(processResult)) {
-      return processResult.then(({ result, ...rest }) => traverse(result, rest, true));
+      return processResult.then(({ result, extra }) => traverse(result, extra, true));
     }
 
     if (processResult) {
-      const { result, ...rest } = processResult;
-      return traverse(result, rest, true);
+      const { result, extra } = processResult;
+      return traverse(result, extra, true);
     }
 
     return traverse(result);
