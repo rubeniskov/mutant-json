@@ -83,6 +83,12 @@ test('should raise error when no operation available', (t) => {
   });
 });
 
+test('should does nothing when nullish object', (t) => {
+
+  const actual = mutateJson(null, () => {});
+  t.is(actual, null);
+});
+
 test('should mutate all entries of the iterator', (t) => {
   const expected = {
     a: 1,
