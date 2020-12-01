@@ -1,6 +1,6 @@
 {
   "name": "mutant-json",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "ava": "^3.13.0",
-    "eslint": "^7.12.1",
+    "eslint": "^7.14.0",
     "http-server": "^0.12.3",
     "jsdoc-to-markdown": "^6.0.1",
     "nyc": "^15.1.0"
