@@ -154,6 +154,8 @@ const mutantJson = (target, process, opts) => {
       return patch.then((res) => applyPatches(res, path, result));
     }
 
+    if (!patch) return;
+
     const parsedPatch = {  op: JSONPATCH_OPS[0], ...patch, path };
 
     if (!JSONPATCH_OPS.includes(parsedPatch.op)) {

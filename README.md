@@ -122,7 +122,7 @@ Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
 
 | Param | Type | Description |
 | --- | --- | --- |
-| op | <code>&quot;add&quot;</code> \| <code>&quot;remove&quot;</code> \| <code>&quot;replace&quot;</code> \| <code>&quot;move&quot;</code> \| <code>&quot;copy&quot;</code> \| <code>&quot;test&quot;</code> | Patch operation |
+| op | <code>&quot;remove&quot;</code> \| <code>&quot;replace&quot;</code> | Patch operation |
 | value | <code>any</code> |  |
 | [path] | <code>String</code> | [JSONPointer](https://tools.ietf.org/html/rfc6901) |
 | [from] | <code>String</code> | [JSONPointer](https://tools.ietf.org/html/rfc6901) |
