@@ -9,10 +9,19 @@
     "test": "nyc ava -v",
     "docs": "{ cat HEADER.md; jsdoc2md index.js; } > README.md",
     "coverage": "nyc report --reporter=lcov --reporter=text",
+    "postcoverage": "codecov",
     "report": "nyc report --reporter=html && http-server -o coverage"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rubeniskov/mutant-json.git"
+  },
+  "author": "rubeniskov <me@rubeniskov.com> (http://rubeniskov.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rubeniskov/mutant-json/issues"
+  },
+  "homepage": "https://github.com/rubeniskov/mutant-json#readme",
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint",
@@ -24,7 +33,8 @@
     "eslint": "^7.14.0",
     "http-server": "^0.12.3",
     "jsdoc-to-markdown": "^6.0.1",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "codecov": "^3.8.1"
   },
   "dependencies": {
     "traverse-json": "^0.5.1",
