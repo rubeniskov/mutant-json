@@ -128,8 +128,6 @@ Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
 | --- | --- | --- |
 | op | <code>&quot;remove&quot;</code> \| <code>&quot;replace&quot;</code> | Patch operation |
 | value | <code>any</code> |  |
-| [path] | <code>String</code> | [JSONPointer](https://tools.ietf.org/html/rfc6901) |
-| [from] | <code>String</code> | [JSONPointer](https://tools.ietf.org/html/rfc6901) |
 
 <a name="MutantPatcher"></a>
 
@@ -174,9 +172,10 @@ Patch definition acording to the [jsonpatch standard](http://jsonpatch.com/)
 | [recursive] | <code>Boolean</code> | <code>true</code> | enable/disable nested arrays and objects recursion |
 | [nested] | <code>Boolean</code> | <code>false</code> | also emit nested array or objects |
 | [step] | <code>Boolean</code> | <code>1</code> | the step to increment, default 1 |
-| [opts.test] | <code>String</code> \| <code>function</code> \| <code>RegeExp</code> | <code>false</code> | regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties |
+| [test] | <code>String</code> \| <code>function</code> \| <code>RegeExp</code> | <code>false</code> | regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties |
 | [once] | <code>Boolean</code> | <code>false</code> | Stops when applies the first mutation |
 | [promises] | <code>Boolean</code> | <code>true</code> | Processing promises taking the resolved as part of the result |
+| [promise] | <code>Boolean</code> | <code>false</code> | Forces to return a promise even if no promises detected |
 | [iterator] | <code>Array.&lt;MutationJsonEntry&gt;</code> \| <code>Iterable</code> \| <code>Iterator</code> |  | Iterator default [traverse-json](https://github.com/rubeniskov/traverse-json) |
 | [patcher] | <code>function</code> |  | Patcher function |
 

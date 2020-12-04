@@ -22,8 +22,6 @@ const parseOptions = (opts) => typeof opts !== 'object' ? ({ test: opts }) : { .
  * @callback MutanPatch
  * @param {("remove"|"replace")} op Patch operation
  * @param {any} value
- * @param {String} [path] [JSONPointer](https://tools.ietf.org/html/rfc6901)
- * @param {String} [from] [JSONPointer](https://tools.ietf.org/html/rfc6901)
  */
 
 /**
@@ -50,9 +48,10 @@ const parseOptions = (opts) => typeof opts !== 'object' ? ({ test: opts }) : { .
  * @prop {Boolean} [recursive=true] enable/disable nested arrays and objects recursion
  * @prop {Boolean} [nested=false] also emit nested array or objects
  * @prop {Boolean} [step=1] the step to increment, default 1
- * @prop {String|Function|RegeExp} [opts.test=false] regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties
+ * @prop {String|Function|RegeExp} [test=false] regexp, string [minimatch](https://www.npmjs.com/package/minimatch) or function to filter properties
  * @prop {Boolean} [once=false] Stops when applies the first mutation
  * @prop {Boolean} [promises=true] Processing promises taking the resolved as part of the result
+ * @prop {Boolean} [promise=false] Forces to return a promise even if no promises detected
  * @prop {Array<MutationJsonEntry>|Iterable|Iterator} [iterator] Iterator default [traverse-json](https://github.com/rubeniskov/traverse-json)
  * @prop {Function} [patcher] Patcher function
  */
@@ -127,6 +126,7 @@ const mutantJson = (target, process, opts) => {
   const {
     once = false,
     promises = true,
+    promise = false,
     iterator = traverseIterator(target, opts),
     patcher = (target, patch) => jsonpatcher.apply_patch(target, [patch]),
   } = parseOptions(opts);
@@ -219,6 +219,10 @@ const mutantJson = (target, process, opts) => {
 
     return traverse(result);
   };
+
+  if (promise) {
+    return Promise.resolve(traverse(target));
+  }
 
   return traverse(target);
 };

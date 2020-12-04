@@ -170,6 +170,27 @@ test('should replace all the values entries by an string using replace', (t) => 
   t.deepEqual(actual, expected);
 });
 
+test('should do nothing when no patch', (t) => {
+  const expected = {
+    a: 0,
+    b: 1,
+    c: 2,
+   };
+
+  const entries = Object.entries(oneDepthObject).map(([k, v]) => [`/${k}`, v]);
+
+  t.plan(4);
+  let idx = 0;
+  const actual = mutateJson(oneDepthObject, (mutate, value, path) => {
+    t.deepEqual([path, value], entries[idx++]);
+    mutate();
+  }, {
+    iterator: entries,
+  });
+
+  t.deepEqual(actual, expected);
+});
+
 test('should remove entries with value 1', (t) => {
   const expected = {
     a: 0,
@@ -382,13 +403,34 @@ test('should mutate using a promise', async (t) => {
   };
 
   const actual = await mutateJson(Promise.resolve(flattenObjectPromises), (mutate, value) => {
-    // mutate(Promise.resolve({
-    //   value: value * 100,
-    // }));
     mutate(Promise.resolve({
       value: value * 100,
     }));
   });
 
   t.deepEqual(actual, expected);
+});
+
+
+test('should force return a promise even when no promise detected', async (t) => {
+
+  const flattenObjectPromises = {
+    foo: 1,
+    bar: 2,
+  };
+
+  const expected = {
+    foo: 100,
+    bar: 200,
+  };
+
+  const actual = mutateJson(flattenObjectPromises, (mutate, value) => {
+    mutate({
+      value: value * 100,
+    });
+  }, { promise: true });
+
+  t.true(actual instanceof Promise);
+
+  return actual.then((value) => t.deepEqual(value, expected));
 });
