@@ -452,6 +452,28 @@ test('should mutate using a promise', async (t) => {
   t.deepEqual(actual, expected);
 });
 
+test('should mutate using async', async (t) => {
+
+  const flattenObjectPromises = {
+    foo: Promise.resolve(1),
+    bar: Promise.resolve(2),
+  };
+
+  const expected = {
+    foo: 100,
+    bar: 200,
+  };
+
+  const actual = await mutateJson(Promise.resolve(flattenObjectPromises), async (mutate, value) => {
+    const op = await Promise.resolve({
+      value: value * 100,
+    });
+    mutate(op);
+  });
+
+  t.deepEqual(actual, expected);
+});
+
 
 test('should force return a promise even when no promise detected', async (t) => {
 

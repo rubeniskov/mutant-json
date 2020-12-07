@@ -181,10 +181,13 @@ const mutantJson = (target, process, opts) => {
   const processMutation = (value, path, target) => {
     let ret;
 
-    process((patch) => {
+    const presult = process((patch) => {
       ret = applyPatches(patch, path, target);
     }, value, path, target);
 
+    if (isPromise(presult)) {
+      return presult.then(() => ret);
+    }
     return ret;
   };
 
