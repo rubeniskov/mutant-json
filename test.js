@@ -301,6 +301,26 @@ test('should modify the nested values', (t) => {
   t.deepEqual(actual, expected);
 });
 
+test('should set null and undefined', async (t) => {
+
+  const flattenObjectPromises = {
+    foo: Promise.resolve(1),
+    bar: Promise.resolve(2),
+  };
+
+  const expected = {
+    foo: null,
+    bar: undefined,
+  };
+
+  const actual = await mutateJson(flattenObjectPromises, (mutate, _, path) => {
+    mutate({
+      value: /foo$/.test(path) ? null : undefined,
+    });
+  });
+
+  t.deepEqual(actual, expected);
+});
 
 test('should works with promises', async (t) => {
 
@@ -318,6 +338,27 @@ test('should works with promises', async (t) => {
     mutate({
       value: value * 100,
     });
+  });
+
+  t.deepEqual(actual, expected);
+});
+
+test('should set null and undefined with promises', async (t) => {
+
+  const flattenObjectPromises = {
+    foo: Promise.resolve(1),
+    bar: Promise.resolve(2),
+  };
+
+  const expected = {
+    foo: null,
+    bar: undefined,
+  };
+
+  const actual = await mutateJson(flattenObjectPromises, (mutate, _, path) => {
+    mutate(Promise.resolve({
+      value: /foo$/.test(path) ? null : undefined,
+    }));
   });
 
   t.deepEqual(actual, expected);

@@ -170,7 +170,9 @@ const mutantJson = (target, process, opts) => {
 
     return {
       result: patched,
-      extra: parsedPatch.op !== 'remove' && typeof parsedPatch.value === 'object'
+      extra: parsedPatch.op !== 'remove'
+          && parsedPatch.value !== null
+          && typeof parsedPatch.value === 'object'
         ? [parsedPatch.path, tap(patched, parsedPatch.path)]
         : undefined,
     };
